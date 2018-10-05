@@ -8,11 +8,11 @@
 package org.usfirst.frc.team4859.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team4859.robot.subsystems.DriveTrain;
+import org.usfirst.frc.team4859.robot.subsystems.PIDDriveTrain;
 
 
 /**
@@ -23,8 +23,9 @@ import org.usfirst.frc.team4859.robot.subsystems.DriveTrain;
  * project.
  */
 public class Robot extends TimedRobot {
-	public static DriveTrain driveTrain = new DriveTrain();
-	public static OI oi;
+	public static DriveTrain driveTrainSubSys = new DriveTrain();
+	public static PIDDriveTrain pidDriveTrainSubSys = new PIDDriveTrain();
+	public static OI operatorInterface;
 
 
 	/**
@@ -33,7 +34,12 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void robotInit() {
-		oi = new OI();
+		operatorInterface = new OI();
+		SmartDashboard.putData(Scheduler.getInstance());
+		LiveWindow.add(pidDriveTrainSubSys.getPIDController());
+		LiveWindow.add(pidDriveTrainSubSys.motorLeftMaster);
+		//LiveWindow.addSensor("PIDDriveTrain", "NavX", pidDriveTrainSubSys.getPIDController());
+		//LiveWindow.addActuator("PIDDriveTrain", "motorLeftMaster", pidDriveTrainSubSys.motorLeftMaster);
 	}
 
 	/**
@@ -49,6 +55,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void disabledPeriodic() {
 		Scheduler.getInstance().run();
+		UpdateStatus();
 	}
 
 	/**
@@ -92,11 +99,16 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
 	}
+	
 
 	/**
 	 * This function is called periodically during test mode.
 	 */
 	@Override
 	public void testPeriodic() {
+	}
+	
+	private void UpdateStatus() {
+		driveTrainSubSys.updateStatus();
 	}
 }

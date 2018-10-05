@@ -46,7 +46,10 @@ public class OI {
 	// until it is finished as determined by it's isFinished method.
 	// button.whenReleased(new ExampleCommand());
 	
+	// The joystick for controlling the drive train.  This is tricky how it gets into 
+	// the drive train code.  
 	private final Joystick joystick = new Joystick(RobotMap.joystickPort);
+	public Joystick getJoyStick() { return joystick; }
 	
 	protected Button btnDriveForward = new JoystickButton(joystick, RobotMap.driveForwardBtnNum);
 }
