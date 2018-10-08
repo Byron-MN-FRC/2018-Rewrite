@@ -2,6 +2,8 @@ package org.usfirst.frc.team4859.robot.subsystems;
 
 import org.usfirst.frc.team4859.robot.RobotMap;
 import org.usfirst.frc.team4859.robot.commands.DriveWithJoystick;
+import org.usfirst.frc.team4859.robot.commands.DriveWithJoystickAssisted;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -16,10 +18,10 @@ import com.kauailabs.navx.frc.AHRS;
  *
  */
 public class PIDDriveTrain extends PIDSubsystem {
-	static final double kp = 0;
+	static final double kp = 0.03f;
 	static final double ki = 0;
 	static final double kd = 0;
-	static final double kperiod = 1f;
+	static final double kperiod = 1000f;
 	static final double kToleranceDegrees = 2.0f;    
 
 	public static WPI_TalonSRX motorLeftMaster = new WPI_TalonSRX(RobotMap.talonIDLeftMaster);
@@ -43,16 +45,18 @@ public class PIDDriveTrain extends PIDSubsystem {
 	
     // Initialize your subsystem here
     public PIDDriveTrain() {
-    	super("PIDDriveTrain", kp, ki, kd, kperiod);
+    	super("PIDDriveTrain", kp, ki, kd, 0);
     	
         try {
         	NAVX_ahrs = new AHRS(SerialPort.Port.kUSB1); 
+        	NAVX_ahrs.reset();
         } catch (RuntimeException ex ) {
             DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
         }
         setInputRange(-180.0f,  180.0f);
         setOutputRange(-1.0, 1.0);
         setAbsoluteTolerance(kToleranceDegrees);
+        this.getPosition();
     }
 
     protected double returnPIDInput() {
@@ -62,12 +66,15 @@ public class PIDDriveTrain extends PIDSubsystem {
         return NAVX_ahrs.getYaw();
     }
 
+    @Override
     protected void usePIDOutput(double output) {
     	pidOutput = output;
+    	//System.out.println(pidOutput);
     }
     
+    
 	public void initDefaultCommand () {
-		setDefaultCommand(new DriveWithJoystick());
+		setDefaultCommand(new DriveWithJoystickAssisted());
 	}
 
 	public void driveWithJoystick(Joystick joyStick) {
@@ -76,8 +83,10 @@ public class PIDDriveTrain extends PIDSubsystem {
 		joystickTwist = joyStick.getTwist();
 		
 		// If we are driving straight (no twist) use navx && PID to keep us straight
-		if (joystickTwist == 0) {
+		if (Math.abs(joystickTwist) < 0.2) {
 			if (!operatorAssist) {
+				//NAVX_ahrs.reset();
+				NAVX_ahrs.zeroYaw();
 				operatorAssist = true;
 				setSetpoint(NAVX_ahrs.getYaw());
 				pidOutput = 0; // initialize it, will be changed by PID system
@@ -85,16 +94,21 @@ public class PIDDriveTrain extends PIDSubsystem {
 			}
 		}
 		else {operatorAssist = false; disable();}
-		
+	
 		// The rotation portion of arcadeDrive will use pidOutput if operatorAssist is true, 
 		// otherwise, will use the joystick twist.
-		drivetrain.arcadeDrive(joystickY, (operatorAssist ? pidOutput : joystickTwist));
+		drivetrain.arcadeDrive(-joystickY, (operatorAssist ? pidOutput : joystickTwist));
 	}
 	
 	public void updateStatus() {
 		SmartDashboard.putNumber("Joystick-Y", joystickY);
-		SmartDashboard.putNumber("Joystick-Twist", joystickY);
+		SmartDashboard.putNumber("Joystick-Twist", joystickTwist);
 		SmartDashboard.putNumber("PID Correction", pidOutput);
+		SmartDashboard.putBoolean("DriveStraightAssist", operatorAssist);
+		SmartDashboard.putNumber("Navx Yaw", NAVX_ahrs.getYaw());
+		SmartDashboard.putNumber("NavX Pitch", NAVX_ahrs.getPitch());
+		SmartDashboard.putNumber("Navx Roll", NAVX_ahrs.getRoll());
+		SmartDashboard.putData(this.getPIDController());
 	}
 	
 	public void stop() {
