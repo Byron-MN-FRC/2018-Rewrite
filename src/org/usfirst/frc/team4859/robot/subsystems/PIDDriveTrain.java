@@ -53,8 +53,6 @@ public class PIDDriveTrain extends PIDSubsystem {
         setInputRange(-180.0f,  180.0f);
         setOutputRange(-1.0, 1.0);
         setAbsoluteTolerance(kToleranceDegrees);
-        
-       
     }
 
     protected double returnPIDInput() {
