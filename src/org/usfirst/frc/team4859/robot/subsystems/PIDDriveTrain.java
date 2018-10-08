@@ -19,8 +19,8 @@ public class PIDDriveTrain extends PIDSubsystem {
 	static final double kp = 0;
 	static final double ki = 0;
 	static final double kd = 0;
-	static final double kperiod = 1f;
-	static final double kToleranceDegrees = 2.0f;    
+	static final double kPeriod= 1f;
+	static final double kToleranceDegrees = 0.5f;    
 
 	public static WPI_TalonSRX motorLeftMaster = new WPI_TalonSRX(RobotMap.talonIDLeftMaster);
 	public static WPI_TalonSRX motorLeftFollower = new WPI_TalonSRX(RobotMap.talonIDLeftFollower);
@@ -36,14 +36,14 @@ public class PIDDriveTrain extends PIDSubsystem {
 	private AHRS NAVX_ahrs; // Attitude Heading Reference System
 	private double joystickY;
 	private double joystickTwist;
-	private double pidOutput = 0; // based on angle of robot.
+	private double pidOutput = 0.0; // based on angle of robot.
 	
 	private boolean operatorAssist = false;  // When driving straight, operatorAssist will keep you straight.
 	
 	
     // Initialize your subsystem here
     public PIDDriveTrain() {
-    	super("PIDDriveTrain", kp, ki, kd, kperiod);
+    	super("PIDDriveTrain", kp, ki, kd, 0, kPeriod);
     	
         try {
         	NAVX_ahrs = new AHRS(SerialPort.Port.kUSB1); 
@@ -53,6 +53,8 @@ public class PIDDriveTrain extends PIDSubsystem {
         setInputRange(-180.0f,  180.0f);
         setOutputRange(-1.0, 1.0);
         setAbsoluteTolerance(kToleranceDegrees);
+        
+       
     }
 
     protected double returnPIDInput() {
@@ -76,7 +78,7 @@ public class PIDDriveTrain extends PIDSubsystem {
 		joystickTwist = joyStick.getTwist();
 		
 		// If we are driving straight (no twist) use navx && PID to keep us straight
-		if (joystickTwist == 0) {
+		if ((joystickTwist == 0) && (joystickY != 0)){
 			if (!operatorAssist) {
 				operatorAssist = true;
 				setSetpoint(NAVX_ahrs.getYaw());
