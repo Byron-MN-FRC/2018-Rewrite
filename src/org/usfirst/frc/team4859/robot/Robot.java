@@ -27,6 +27,11 @@ public class Robot extends TimedRobot {
 	public static PIDDriveTrain pidDriveTrainSubSys = new PIDDriveTrain();
 	public static OI operatorInterface;
 
+	@Override
+	public void robotPeriodic() { 
+		UpdateStatus();
+	}
+
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -36,8 +41,8 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		operatorInterface = new OI();
 		SmartDashboard.putData(Scheduler.getInstance());
-		LiveWindow.add(pidDriveTrainSubSys.getPIDController());
-		LiveWindow.add(pidDriveTrainSubSys.motorLeftMaster);
+		//LiveWindow.add(pidDriveTrainSubSys.getPIDController());
+		//LiveWindow.add(pidDriveTrainSubSys.motorLeftMaster);
 		//LiveWindow.addSensor("PIDDriveTrain", "NavX", pidDriveTrainSubSys.getPIDController());
 		//LiveWindow.addActuator("PIDDriveTrain", "motorLeftMaster", pidDriveTrainSubSys.motorLeftMaster);
 	}
@@ -49,13 +54,11 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void disabledInit() {
-
 	}
 
 	@Override
 	public void disabledPeriodic() {
 		Scheduler.getInstance().run();
-		UpdateStatus();
 	}
 
 	/**
@@ -109,6 +112,7 @@ public class Robot extends TimedRobot {
 	}
 	
 	private void UpdateStatus() {
-		driveTrainSubSys.updateStatus();
+		//driveTrainSubSys.updateStatus();
+		pidDriveTrainSubSys.updateStatus();
 	}
 }
